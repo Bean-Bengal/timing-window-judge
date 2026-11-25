@@ -1,0 +1,46 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Timing Window Judge</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:16px;max-width:480px;background:#f6f1e7;color:#222;box-sizing:border-box}
+*{box-sizing:border-box}
+input{width:100%;font-size:20px;padding:10px;min-height:44px}
+#out{font-size:28px;margin:16px 0;min-height:40px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{min-height:44px;padding:0 14px;font-size:16px}
+p{color:#555;font-size:14px}
+</style></head><body>
+<script data-bean-store>(function(){if(typeof location!=='undefined'&&location&&location.protocol==='about:'&&typeof document!=='undefined'&&document.addEventListener){document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[href^="#"]');if(!a||a.target==='_blank')return;e.preventDefault();try{location.hash=a.getAttribute('href')}catch(x){}},true)}if(typeof window==='undefined')return;try{window.localStorage.getItem('x');return}catch(e){}var d=Object.assign({},window.__BEAN_SAVED||{});function post(){try{parent.postMessage({type:'bean-store',data:d},'*')}catch(e){}}var ls={getItem:function(k){return Object.prototype.hasOwnProperty.call(d,k)?d[k]:null},setItem:function(k,v){d[k]=String(v);post()},removeItem:function(k){delete d[k];post()},clear:function(){d={};post()},key:function(i){return Object.keys(d)[i]||null}};Object.defineProperty(ls,'length',{get:function(){return Object.keys(d).length}});try{Object.defineProperty(window,'localStorage',{value:ls,configurable:true})}catch(e){}})();</script>
+<h1>Timing Window Judge</h1>
+<p>How early (negative) or late (positive) was the hit, in milliseconds? Ticks are 1/150 s. Marvelous: within 1 tick. Perfect: within 3 ticks. Past that is a miss. My own guessed windows.</p>
+<input id="ms" type="number" value="0" inputmode="numeric">
+<div id="out"></div>
+<div class="row"><button onclick="setv(-10)">-10</button><button onclick="setv(0)">0</button><button onclick="setv(7)">7</button><button onclick="setv(20)">20</button><button onclick="setv(-40)">-40</button></div>
+<script>
+function makeJudge(le){
+  return function(sec){
+    var t=Math.abs(Math.round(sec*150));
+    var m=le?t<=1:t<1, p=le?t<=3:t<3;
+    return m?"Marvelous":p?"Perfect":"miss";
+  };
+}
+var judge=makeJudge(true), broken=makeJudge(false);
+var cases=[[0,"Marvelous"],[0.006,"Marvelous"],[0.01,"Marvelous"],[0.012,"Perfect"],[-0.02,"Perfect"],[0.03,"miss"],[-0.05,"miss"],[0.0033,"Marvelous"]];
+// 1 tick = 6.667ms; 10ms rounds to 2 ticks? 1.5 rounds to 2 -> Perfect
+cases[2]=[0.0066,"Marvelous"];
+cases[3]=[0.0134,"Perfect"];
+cases.push([0.0201,"Perfect"],[0.0334,"miss"]);
+function run(f){return cases.every(function(c){return f(c[0])===c[1];});}
+try{
+  if(!run(judge))console.error("judge FAILED");
+  if(run(broken))console.error("broken twin got through");
+}catch(e){console.error("check crashed",e);}
+function show(){
+  var v=parseFloat(document.getElementById("ms").value);
+  var o=document.getElementById("out");
+  if(isNaN(v)){o.textContent="";return;}
+  var ticks=Math.round(v/1000*150);
+  o.textContent=judge(v/1000)+" ("+ticks+" ticks)";
+}
+function setv(n){document.getElementById("ms").value=n;show();}
+document.getElementById("ms").oninput=show;
+show();
+</script></body></html>
